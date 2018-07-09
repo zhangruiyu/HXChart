@@ -6,6 +6,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import org.w3c.dom.Text
 
 class CharView : View {
 
@@ -56,6 +57,7 @@ class CharView : View {
     private val redCircle: Paint = Paint()
     private val redLine: Paint = Paint()
     private val redPath: Paint = Paint()
+    private val textPaint: Paint = Paint()
 
     init {
         whiteCircle.color = Color.WHITE
@@ -69,69 +71,45 @@ class CharView : View {
         redPath.color = Color.BLUE
         redPath.strokeWidth = 3.0f
         redPath.isAntiAlias = true;//设置线条等图形的抗锯齿
+        textPaint.isAntiAlias = true;//设置线条等图形的抗锯齿
+        textPaint.textSize = 40f
+        textPaint.color = Color.YELLOW
+        textPaint.textAlign = Paint.Align.CENTER
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        when (event.getActionMasked()) {
+        when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
-                lastX = event.getX()
+                lastX = event.x
                 firstX = lastX
-                firstY = event.getY()
-//                scroller.abortAnimation()
-//                initOrResetVelocityTracker()
-//                velocityTracker.addMovement(event)
+                firstY = event.y
                 super.onTouchEvent(event)
                 return true
             }
             MotionEvent.ACTION_POINTER_DOWN -> lastX = event.getX(0)
             MotionEvent.ACTION_MOVE -> {
-                orientationX = event.getX() - lastX
+                orientationX = event.x - lastX
                 Log.e("orientationX", orientationX.toString())
                 onScroll(orientationX)
-                lastX = event.getX()
-                /*   velocityTracker.addMovement(event)
-                   if (needEdgeEffect && datas.get(0).size > maxOfVisible) {
-                       if (isArriveAtLeftEdge()) {
-                           edgeEffectLeft.onPull(Math.abs(orientationX) / linesArea.height())
-                       } else if (isArriveAtRightEdge()) {
-                           edgeEffectRight.onPull(Math.abs(orientationX) / linesArea.height())
-                       }
-                   }*/
+                lastX = event.x
             }
-        /* MotionEvent.ACTION_POINTER_UP // 计算出正确的追踪手指
-         -> {
-             var minID = event.getPointerId(0)
-             for (i in 0 until event.getPointerCount()) {
-                 if (event.getPointerId(i) <= minID) {
-                     minID = event.getPointerId(i)
-                 }
-             }
-             if (event.getPointerId(event.getActionIndex()) == minID) {
-                 minID = event.getPointerId(event.getActionIndex() + 1)
-             }
-             lastX = event.getX(event.findPointerIndex(minID))
-         }
-         MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
-             if (needShowHint && event.getAction() == MotionEvent.ACTION_UP) {
-                 val canCallTap = Math.abs(event.getX() - firstX) < 2 && Math.abs(event.getY() - firstY) < 2
-                 if (canCallTap) {
-                     onTap(event.getX(), event.getY())
-                 }
-             }
-             velocityTracker.addMovement(event)
-             velocityTracker.computeCurrentVelocity(1000, maxVelocity.toFloat())
-             val initialVelocity = velocityTracker.getXVelocity().toInt()
-             velocityTracker.clear()
-             if (!isArriveAtLeftEdge() && !isArriveAtRightEdge()) {
-                 scroller.fling(event.getX().toInt(), event.getY().toInt(), initialVelocity / 2,
-                         0, Integer.MIN_VALUE, Integer.MAX_VALUE, 0, 0)
-                 invalidate()
-             } else {
-                 edgeEffectLeft.onRelease()
-                 edgeEffectRight.onRelease()
-             }
-             lastX = event.getX()
-         }*/
+            MotionEvent.ACTION_POINTER_UP // 计算出正确的追踪手指
+            -> {
+                var minID = event.getPointerId(0)
+                for (i in 0 until event.pointerCount) {
+                    if (event.getPointerId(i) <= minID) {
+                        minID = event.getPointerId(i)
+                    }
+                }
+                if (event.getPointerId(event.actionIndex) == minID) {
+                    minID = event.getPointerId(event.actionIndex + 1)
+                }
+                lastX = event.getX(event.findPointerIndex(minID))
+
+            }
+            MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
+                lastX = event.x
+            }
         }
 
         return super.onTouchEvent(event)
@@ -182,9 +160,9 @@ class CharView : View {
             }
             canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), whitePointradius, whiteCircle)
             canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), 10f, redCircle)
+            canvas.drawText(total[index].text, point.x.toFloat(), (height - 20).toFloat(), textPaint)
 
         }
-
 
     }
 

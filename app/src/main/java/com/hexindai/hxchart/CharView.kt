@@ -145,9 +145,12 @@ class CharView : View {
     private fun onScroll(deltaX: Float) {
         offset += deltaX
         Log.e("onScroll", offset.toString())
+        Log.e("onScroll", (pointPosition[pointPosition.size - 1].x.toFloat() + width / 2).toString())
         offset = if (offset > width / 2) {
             (width / 2).toFloat()
-        } else if (Math.abs(offset) > maxOffset) offset else offset
+        } else if (Math.abs(offset) > pointPosition[pointPosition.size - 1].x.toFloat() - width / 2) {
+            (-pointPosition[pointPosition.size - 1].x.toFloat() + width / 2)
+        } else offset
         invalidate()
     }
 
@@ -165,7 +168,6 @@ class CharView : View {
             path.lineTo(pointPosition[index].x.toFloat(), pointPosition[index].y.toFloat())
         }
         path.lineTo(pointPosition[pointPosition.size - 1].x.toFloat() + width / 2, pointPosition[pointPosition.size - 1].y.toFloat())
-//        path.lineTo(pointPosition[pointPosition.size - 1].x.toFloat() + width / 2, pointPosition[pointPosition.size - 1].y.toFloat())
         path.lineTo(pointPosition[pointPosition.size - 1].x.toFloat() + width / 2, height.toFloat())
         path.lineTo((-width / 2).toFloat(), height.toFloat())
         path.close()
@@ -196,8 +198,6 @@ class CharView : View {
         //初始化底部高度
         startHeight = (((1 - total[0].value / maxValuePoint!!.value) * canUseHeight) + topPading).toInt()
 
-        Log.e("CharView", width.toString())
-        Log.e("CharView", height.toString())
         val itemWidth = getItemWidth()
 
         total.forEachIndexed { index, valueAndText ->

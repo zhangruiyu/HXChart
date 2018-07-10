@@ -3,6 +3,7 @@ package com.hexindai.hxchart
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -16,7 +17,7 @@ class CharView : View {
     private val maxPoint = 5
     //左右pad
     private val padding = 40
-    private val whitePointradius = 20F
+    private val whitePointradius = 6.5f
     //留一点点空间
     private val topPading = whitePointradius * 2
     //底部起始高度
@@ -69,19 +70,22 @@ class CharView : View {
 
     init {
         whiteCircle.color = Color.WHITE
+        whiteCircle.isAntiAlias = true//设置线条等图形的抗锯齿
 
-        whiteCircle.isAntiAlias = true;//设置线条等图形的抗锯齿
-        redCircle.color = Color.RED
-        redCircle.isAntiAlias = true;//设置线条等图形的抗锯齿
-        redLine.color = Color.RED
-        redLine.isAntiAlias = true;//设置线条等图形的抗锯齿
-        redLine.strokeWidth = 3.0f
-        redPath.color = Color.BLUE
+        redCircle.color = Color.parseColor("#FFE71D36")
+        redCircle.isAntiAlias = true//设置线条等图形的抗锯齿
+
+        redLine.color = Color.parseColor("#FFE71D36")
+        redLine.isAntiAlias = true//设置线条等图形的抗锯齿
+        redLine.strokeWidth = dip2px(1f).toFloat()
+
+        redPath.color = Color.parseColor("#FFF4E4E6")
         redPath.strokeWidth = 3.0f
-        redPath.isAntiAlias = true;//设置线条等图形的抗锯齿
+        redPath.isAntiAlias = true//设置线条等图形的抗锯齿
+
         textPaint.isAntiAlias = true;//设置线条等图形的抗锯齿
-        textPaint.textSize = 40f
-        textPaint.color = Color.YELLOW
+        textPaint.textSize = sp2px(12f).toFloat()
+        textPaint.color = Color.parseColor("#FF333333")
         textPaint.textAlign = Paint.Align.CENTER
     }
 
@@ -107,7 +111,6 @@ class CharView : View {
             }
             MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
                 lastX = event.x
-                val itemWidth = getItemWidth()
                 //中间的线
                 val center = width / 2
                 //屏幕中心 - x点 -偏移量
@@ -131,7 +134,7 @@ class CharView : View {
         return super.onTouchEvent(event)
     }
 
-    fun minDistanceToCenter(list: List<PointXYZ>): PointXYZ {
+    private fun minDistanceToCenter(list: List<PointXYZ>): PointXYZ {
         // 接近的数字
         val nearNum = 0
         // 差值实始化
@@ -195,8 +198,9 @@ class CharView : View {
             } catch (e: Exception) {
 
             }
-            canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), whitePointradius, whiteCircle)
-            canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), 10f, redCircle)
+            canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), dip2px(whitePointradius).toFloat(), whiteCircle)
+            //小红色圆
+            canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), dip2px(5f).toFloat(), redCircle)
             canvas.drawText(total[index].text, point.x.toFloat(), (height - 20).toFloat(), textPaint)
 
         }
@@ -233,11 +237,32 @@ class CharView : View {
     private fun getItemWidth(): Int {
         return (getCanUseWidth() / maxPoint)
     }
+
+    /**
+     * 根据手机分辨率从DP转成PX
+     * @param context
+     * @param dpValue
+     * @return
+     */
+    fun dip2px(dpValue: Float): Int {
+        val scale = context.resources.displayMetrics.density
+        return (dpValue * scale + 0.5f).toInt()
+    }
+
+    /**
+     * 将sp值转换为px值，保证文字大小不变
+     *
+     * @param spValue
+     * @param fontScale （DisplayMetrics类中属性scaledDensity）
+     * @return
+     */
+    fun sp2px(spValue: Float): Int {
+        val fontScale = context.resources.displayMetrics.scaledDensity
+        return (spValue * fontScale + 0.5f).toInt()
+    }
 }
 
-class ValueAndText(val value: Double, val text: String) {
-    var off = 0f
-}
+class ValueAndText(val value: Double, val text: String)
 
 class PointXYZ(val list: Point) {
     var off = 0f

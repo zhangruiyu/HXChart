@@ -8,6 +8,6 @@
     <com.hexindai.hxchart.CharView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/darker_gray" />
+        android:background="#FFF5F5F5" />
 
 </android.support.constraint.ConstraintLayout>

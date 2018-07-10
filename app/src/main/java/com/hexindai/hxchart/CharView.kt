@@ -3,7 +3,6 @@ package com.hexindai.hxchart
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
@@ -26,10 +25,6 @@ class CharView : View {
     private var firstX: Float = 0.toFloat()
     private var firstY: Float = 0.toFloat()
     /**
-     * 根据可见点数计算出的两点之间的距离
-     */
-    private var realBetween: Float = 0.toFloat()
-    /**
      * 手指/fling的上次位置
      */
     private var lastX: Float = 0.toFloat()
@@ -37,14 +32,6 @@ class CharView : View {
      * 滚动当前偏移量
      */
     private var offset: Float = 0.toFloat()
-    /**
-     * 滚动上一次的偏移量
-     */
-    private var lastOffset: Float = 0.toFloat()
-    /**
-     * 滚动偏移量的边界
-     */
-    private var maxOffset: Float = 0.toFloat()
     private var orientationX: Float = 0.toFloat()
     private val total = listOf(ValueAndText(8.0, "1"),
             ValueAndText(8.5, "2"),
@@ -79,7 +66,8 @@ class CharView : View {
         redLine.isAntiAlias = true//设置线条等图形的抗锯齿
         redLine.strokeWidth = dip2px(1f).toFloat()
 
-        redPath.color = Color.parseColor("#FFF4E4E6")
+        redPath.color = Color.parseColor("#33E71D36")
+//        redPath.alpha = 204
         redPath.strokeWidth = 3.0f
         redPath.isAntiAlias = true//设置线条等图形的抗锯齿
 
@@ -152,11 +140,6 @@ class CharView : View {
         return result
     }
 
-    /**
-     * 滑动方法，同时检测边缘条件
-     *
-     * @param deltaX
-     */
     private fun onScroll(deltaX: Float) {
         offset += deltaX
 //        Log.e("onScroll", offset.toString())
@@ -201,7 +184,7 @@ class CharView : View {
             canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), dip2px(whitePointradius).toFloat(), whiteCircle)
             //小红色圆
             canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), dip2px(5f).toFloat(), redCircle)
-            canvas.drawText(total[index].text, point.x.toFloat(), (height - 20).toFloat(), textPaint)
+            canvas.drawText(total[index].text+"月", point.x.toFloat(), (height - dip2px(8f)).toFloat(), textPaint)
 
         }
         canvas.restore()

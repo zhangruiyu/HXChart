@@ -9,14 +9,22 @@ import android.view.View
 
 class CharView : View {
 
-    constructor(context: Context?) : super(context)
-    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
+    constructor(context: Context?, listener: (ValueAndText) -> Unit, listener1: (ValueAndText) -> Unit) : super(context) {
+        this.listener = listener
+        this.listener = listener1
+    }
+
+    constructor(context: Context?, attrs: AttributeSet?, listener: (ValueAndText) -> Unit, listener1: (ValueAndText) -> Unit) : super(context, attrs) {
+        this.listener = listener
+        this.listener = listener1
+    }
+
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     private val maxPoint = 5
     //左右pad
     private val padding = 40
-    private val whitePointradius = 6.5f
+    private val whitePointradius = 4.5f
     //留一点点空间
     private val topPading = whitePointradius * 2
     //底部起始高度
@@ -66,7 +74,7 @@ class CharView : View {
         redLine.isAntiAlias = true//设置线条等图形的抗锯齿
         redLine.strokeWidth = dip2px(1f).toFloat()
 
-        redPath.color = Color.parseColor("#33E71D36")
+        redPath.color = Color.parseColor("#f4e4e6")
 //        redPath.alpha = 204
         redPath.strokeWidth = 3.0f
         redPath.isAntiAlias = true//设置线条等图形的抗锯齿
@@ -118,7 +126,6 @@ class CharView : View {
                 postInvalidate()
             }
         }
-//        minDistanceToCenter
         return super.onTouchEvent(event)
     }
 
@@ -152,6 +159,23 @@ class CharView : View {
             else -> offset
         }
         invalidate()
+        val center = width / 2
+        val calculateDistanceToCenter = pointPosition.map {
+            //                    Log.e("offset", offset.toString())
+//                    Log.e("pointPosition", (it.x - Math.abs(offset)).toString())
+            Log.e("pointPosition", (it.x - center + offset).toString())
+
+            val pointXYZ = PointXYZ(it)
+            pointXYZ.off = it.x - center + offset
+            pointXYZ
+        }
+        minDistanceToCenter(calculateDistanceToCenter)
+    }
+
+    private  var listener: (ValueAndText) -> Unit
+
+    fun setValueChanged(listener:(ValueAndText)->Unit){
+//        this.listener =listener
     }
 
 
@@ -179,12 +203,12 @@ class CharView : View {
             try {
                 canvas.drawLine(point.x.toFloat(), point.y.toFloat(), pointPosition[index + 1].x.toFloat(), pointPosition[index + 1].y.toFloat(), redLine)
             } catch (e: Exception) {
-
+                canvas.drawLine(point.x.toFloat(), point.y.toFloat(), point.x.toFloat()+width/2,point.y.toFloat(), redLine)
             }
             canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), dip2px(whitePointradius).toFloat(), whiteCircle)
             //小红色圆
-            canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), dip2px(5f).toFloat(), redCircle)
-            canvas.drawText(total[index].text+"月", point.x.toFloat(), (height - dip2px(8f)).toFloat(), textPaint)
+            canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), dip2px(2.5f).toFloat(), redCircle)
+            canvas.drawText(total[index].text + "月", point.x.toFloat(), (height - dip2px(8f)).toFloat(), textPaint)
 
         }
         canvas.restore()
@@ -192,20 +216,22 @@ class CharView : View {
     }
 
     private fun initPointPosition() {
-        pointPosition.clear()
-        //这个就是最高点
-        val maxValuePoint = total.maxBy {
-            it.value
-        }
-        val canUseHeight = getCanUseHeight()
-        //初始化底部高度
-        startHeight = (((1 - total[0].value / maxValuePoint!!.value) * canUseHeight) + topPading).toInt()
+        if(pointPosition.size  == 0){
+            pointPosition.clear()
+            //这个就是最高点
+            val maxValuePoint = total.maxBy {
+                it.value
+            }
+            val canUseHeight = getCanUseHeight()
+            //初始化底部高度
+            startHeight = (((1 - total[0].value / maxValuePoint!!.value) * canUseHeight) + topPading).toInt()
 
-        val itemWidth = getItemWidth()
+            val itemWidth = getItemWidth()
 
-        total.forEachIndexed { index, valueAndText ->
-            pointPosition.add(Point(padding + itemWidth / 2 + itemWidth * index, (((1 - valueAndText.value / maxValuePoint.value) * canUseHeight) + topPading).toInt()))
+            total.forEachIndexed { index, valueAndText ->
+                pointPosition.add(Point(padding + itemWidth / 2 + itemWidth * index, (((1 - valueAndText.value / maxValuePoint.value) * canUseHeight) + topPading).toInt()))
 
+            }
         }
     }
 

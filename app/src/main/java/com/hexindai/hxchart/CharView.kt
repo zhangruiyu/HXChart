@@ -6,7 +6,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import org.w3c.dom.Text
 
 class CharView : View {
 
@@ -46,18 +45,27 @@ class CharView : View {
      */
     private var maxOffset: Float = 0.toFloat()
     private var orientationX: Float = 0.toFloat()
-    private val total = listOf(ValueAndText(8.0, "1"), ValueAndText(8.5, "2"), ValueAndText(9.0, "1"), ValueAndText(9.5, "1"),
-            ValueAndText(10.0, "1"), ValueAndText(10.5, "1"), ValueAndText(11.0, "1"),
-            ValueAndText(11.5, "1"), ValueAndText(12.0, "1"), ValueAndText(12.5, "1"), ValueAndText(13.0, "1"),
-            ValueAndText(13.5, "1"),
-            ValueAndText(14.0, "1"),
-            ValueAndText(14.0, "1"),
-            ValueAndText(14.0, "1"))
+    private val total = listOf(ValueAndText(8.0, "1"),
+            ValueAndText(8.5, "2"),
+            ValueAndText(9.0, "3"),
+            ValueAndText(9.5, "4"),
+            ValueAndText(10.0, "5"),
+            ValueAndText(10.5, "6"),
+            ValueAndText(11.0, "7"),
+            ValueAndText(11.5, "8"),
+            ValueAndText(12.0, "9"),
+            ValueAndText(12.5, "10"),
+            ValueAndText(13.0, "11"),
+            ValueAndText(13.5, "12"),
+            ValueAndText(14.0, "13"),
+            ValueAndText(14.0, "14"),
+            ValueAndText(14.0, "15"))
     private val whiteCircle: Paint = Paint()
     private val redCircle: Paint = Paint()
     private val redLine: Paint = Paint()
     private val redPath: Paint = Paint()
     private val textPaint: Paint = Paint()
+    private val pointPosition = ArrayList<Point>()
 
     init {
         whiteCircle.color = Color.WHITE
@@ -89,30 +97,56 @@ class CharView : View {
             MotionEvent.ACTION_POINTER_DOWN -> lastX = event.getX(0)
             MotionEvent.ACTION_MOVE -> {
                 orientationX = event.x - lastX
-                Log.e("orientationX", orientationX.toString())
+//                Log.e("orientationX", orientationX.toString())
                 onScroll(orientationX)
                 lastX = event.x
             }
             MotionEvent.ACTION_POINTER_UP // 计算出正确的追踪手指
             -> {
-                var minID = event.getPointerId(0)
-                for (i in 0 until event.pointerCount) {
-                    if (event.getPointerId(i) <= minID) {
-                        minID = event.getPointerId(i)
-                    }
-                }
-                if (event.getPointerId(event.actionIndex) == minID) {
-                    minID = event.getPointerId(event.actionIndex + 1)
-                }
-                lastX = event.getX(event.findPointerIndex(minID))
 
             }
             MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
                 lastX = event.x
+                val itemWidth = getItemWidth()
+                //中间的线
+                val center = width / 2
+                //屏幕中心 - x点 -偏移量
+                Log.e("offset", offset.toString())
+                //距离中心点最小
+                val calculateDistanceToCenter = pointPosition.map {
+                    //                    Log.e("offset", offset.toString())
+//                    Log.e("pointPosition", (it.x - Math.abs(offset)).toString())
+                    Log.e("pointPosition", (it.x - center + offset).toString())
+
+                    val pointXYZ = PointXYZ(it)
+                    pointXYZ.off = it.x - center + offset
+                    pointXYZ
+                }
+                Log.e("MIN", minDistanceToCenter(calculateDistanceToCenter).off.toString())
+                offset -= minDistanceToCenter(calculateDistanceToCenter).off
+                postInvalidate()
+            }
+        }
+//        minDistanceToCenter
+        return super.onTouchEvent(event)
+    }
+
+    fun minDistanceToCenter(list: List<PointXYZ>): PointXYZ {
+        // 接近的数字
+        val nearNum = 0
+        // 差值实始化
+        var diffNum = Math.abs(list[0].off - nearNum)
+        // 最终结果
+        var result = list[0]
+        for (integer in list) {
+            val diffNumTemp = Math.abs(integer.off - nearNum)
+            if (diffNumTemp < diffNum) {
+                diffNum = diffNumTemp
+                result = integer
             }
         }
 
-        return super.onTouchEvent(event)
+        return result
     }
 
     /**
@@ -122,20 +156,23 @@ class CharView : View {
      */
     private fun onScroll(deltaX: Float) {
         offset += deltaX
-        Log.e("onScroll", offset.toString())
-        Log.e("onScroll", (pointPosition[pointPosition.size - 1].x.toFloat() + width / 2).toString())
-        offset = if (offset > width / 2) {
-            (width / 2).toFloat()
-        } else if (Math.abs(offset) > pointPosition[pointPosition.size - 1].x.toFloat() - width / 2) {
-            (-pointPosition[pointPosition.size - 1].x.toFloat() + width / 2)
-        } else offset
+//        Log.e("onScroll", offset.toString())
+//        Log.e("onScroll", (pointPosition[pointPosition.size - 1].x.toFloat() + width / 2).toString())
+        offset = when {
+        //滑到最前
+            offset > width / 2 -> (width / 2).toFloat()
+        //最后
+            Math.abs(offset) > pointPosition[pointPosition.size - 1].x.toFloat() - width / 2 -> -pointPosition[pointPosition.size - 1].x.toFloat() + width / 2
+            else -> offset
+        }
         invalidate()
     }
 
-    val pointPosition = ArrayList<Point>()
+
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
 //        Log.e("translate", offset.toString())
+        canvas.save()
         canvas.translate(offset, 0F)
         initPointPosition()
         //话最前面的区域
@@ -163,7 +200,8 @@ class CharView : View {
             canvas.drawText(total[index].text, point.x.toFloat(), (height - 20).toFloat(), textPaint)
 
         }
-
+        canvas.restore()
+        canvas.drawLine((width / 2).toFloat(), 0f, (width / 2).toFloat(), height.toFloat(), redLine)
     }
 
     private fun initPointPosition() {
@@ -197,4 +235,10 @@ class CharView : View {
     }
 }
 
-class ValueAndText(val value: Double, val text: String)
+class ValueAndText(val value: Double, val text: String) {
+    var off = 0f
+}
+
+class PointXYZ(val list: Point) {
+    var off = 0f
+}

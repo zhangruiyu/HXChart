@@ -183,7 +183,7 @@ class CharView : View {
         canvas.translate(offset, 0F)
         initPointPosition()
         //话最前面的区域
-        canvas.drawLine((-width / 2).toFloat(), pointPosition[0].y.toFloat(), pointPosition[0].x.toFloat(), pointPosition[0].y.toFloat(), redLine)
+        canvas.drawLine((-width / 2).toFloat(), pointPosition[0].y.toFloat(), pointPosition[0].x.toFloat(), pointPosition[0].y.toFloat(), redPath)
         val path = Path()
         path.moveTo((-width / 2).toFloat(), pointPosition[0].y.toFloat())
         pointPosition.forEachIndexed { index, point ->

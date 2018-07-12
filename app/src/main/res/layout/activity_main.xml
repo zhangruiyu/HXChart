@@ -6,6 +6,7 @@
     android:layout_height="100dp"
     tools:context=".MainActivity">
     <com.hexindai.hxchart.CharView
+        android:layerType="software"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#FFF5F5F5" />

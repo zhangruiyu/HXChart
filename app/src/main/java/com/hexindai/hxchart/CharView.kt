@@ -9,18 +9,13 @@ import android.view.View
 
 class CharView : View {
 
-    constructor(context: Context?, listener: (ValueAndText) -> Unit, listener1: (ValueAndText) -> Unit) : super(context) {
-        this.listener = listener
-        this.listener = listener1
-    }
+    constructor(context: Context?) : super(context)
 
-    constructor(context: Context?, attrs: AttributeSet?, listener: (ValueAndText) -> Unit, listener1: (ValueAndText) -> Unit) : super(context, attrs) {
-        this.listener = listener
-        this.listener = listener1
-    }
+    constructor(context: Context?, attrs: AttributeSet?) : super(context, attrs)
 
     constructor(context: Context?, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
+    public var listener: ValueAndTextChange? = null
     private val maxPoint = 5
     //左右pad
     private val padding = 40
@@ -41,7 +36,7 @@ class CharView : View {
      */
     private var offset: Float = 0.toFloat()
     private var orientationX: Float = 0.toFloat()
-    private val total = listOf(ValueAndText(8.0, "1"),
+    public val total = mutableListOf(ValueAndText(8.0, "1"),
             ValueAndText(8.5, "2"),
             ValueAndText(9.0, "3"),
             ValueAndText(9.5, "4"),
@@ -54,14 +49,19 @@ class CharView : View {
             ValueAndText(13.0, "11"),
             ValueAndText(13.5, "12"),
             ValueAndText(14.0, "13"),
-            ValueAndText(14.0, "14"),
-            ValueAndText(14.0, "15"))
+            ValueAndText(14.5, "14"),
+            ValueAndText(16.0, "15"))
     private val whiteCircle: Paint = Paint()
     private val redCircle: Paint = Paint()
     private val redLine: Paint = Paint()
     private val redPath: Paint = Paint()
     private val textPaint: Paint = Paint()
     private val pointPosition = ArrayList<Point>()
+    fun addData(newData: List<ValueAndText>) {
+        total.clear()
+        total.addAll(newData)
+        postInvalidate()
+    }
 
     init {
         whiteCircle.color = Color.WHITE
@@ -169,18 +169,15 @@ class CharView : View {
             pointXYZ.off = it.x - center + offset
             pointXYZ
         }
-        minDistanceToCenter(calculateDistanceToCenter)
-    }
-
-    private  var listener: (ValueAndText) -> Unit
-
-    fun setValueChanged(listener:(ValueAndText)->Unit){
-//        this.listener =listener
+        listener?.valueAndTextChangeListener(total[pointPosition.indexOf(minDistanceToCenter(calculateDistanceToCenter).list)])
     }
 
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
+        if (total.isEmpty()) {
+            return
+        }
 //        Log.e("translate", offset.toString())
         canvas.save()
         canvas.translate(offset, 0F)
@@ -203,7 +200,7 @@ class CharView : View {
             try {
                 canvas.drawLine(point.x.toFloat(), point.y.toFloat(), pointPosition[index + 1].x.toFloat(), pointPosition[index + 1].y.toFloat(), redLine)
             } catch (e: Exception) {
-                canvas.drawLine(point.x.toFloat(), point.y.toFloat(), point.x.toFloat()+width/2,point.y.toFloat(), redLine)
+                canvas.drawLine(point.x.toFloat(), point.y.toFloat(), point.x.toFloat() + width / 2, point.y.toFloat(), redLine)
             }
             canvas.drawCircle(point.x.toFloat(), point.y.toFloat(), dip2px(whitePointradius).toFloat(), whiteCircle)
             //小红色圆
@@ -216,22 +213,20 @@ class CharView : View {
     }
 
     private fun initPointPosition() {
-        if(pointPosition.size  == 0){
-            pointPosition.clear()
-            //这个就是最高点
-            val maxValuePoint = total.maxBy {
-                it.value
-            }
-            val canUseHeight = getCanUseHeight()
-            //初始化底部高度
-            startHeight = (((1 - total[0].value / maxValuePoint!!.value) * canUseHeight) + topPading).toInt()
+        pointPosition.clear()
+        //这个就是最高点
+        val maxValuePoint = total.maxBy {
+            it.value
+        }
+        val canUseHeight = getCanUseHeight()
+        //初始化底部高度
+        startHeight = (((1 - total[0].value / maxValuePoint!!.value) * canUseHeight) + topPading).toInt()
 
-            val itemWidth = getItemWidth()
+        val itemWidth = getItemWidth()
 
-            total.forEachIndexed { index, valueAndText ->
-                pointPosition.add(Point(padding + itemWidth / 2 + itemWidth * index, (((1 - valueAndText.value / maxValuePoint.value) * canUseHeight) + topPading).toInt()))
+        total.forEachIndexed { index, valueAndText ->
+            pointPosition.add(Point(padding + itemWidth / 2 + itemWidth * index, (((1 - valueAndText.value / maxValuePoint.value) * canUseHeight) + topPading).toInt()))
 
-            }
         }
     }
 
@@ -269,6 +264,10 @@ class CharView : View {
         val fontScale = context.resources.displayMetrics.scaledDensity
         return (spValue * fontScale + 0.5f).toInt()
     }
+}
+
+interface ValueAndTextChange {
+    fun valueAndTextChangeListener(valueAndText: ValueAndText)
 }
 
 class ValueAndText(val value: Double, val text: String)

@@ -54,6 +54,7 @@ class CharView : View {
     private val whiteCircle: Paint = Paint()
     private val redCircle: Paint = Paint()
     private val redLine: Paint = Paint()
+    private val firstRedLine: Paint = Paint()
     private val redPath: Paint = Paint()
     private val textPaint: Paint = Paint()
     private val pointPosition = ArrayList<Point>()
@@ -71,12 +72,14 @@ class CharView : View {
         redCircle.isAntiAlias = true//设置线条等图形的抗锯齿
 
         redLine.color = Color.parseColor("#FFE71D36")
-        redLine.isAntiAlias = true//设置线条等图形的抗锯齿
         redLine.strokeWidth = dip2px(1f).toFloat()
+        redLine.isAntiAlias = true
+
+        firstRedLine.color = Color.parseColor("#FFE71D36")
+        firstRedLine.strokeWidth = dip2px(2f).toFloat()
+        firstRedLine.isAntiAlias = true
 
         redPath.color = Color.parseColor("#f4e4e6")
-//        redPath.alpha = 204
-        redPath.strokeWidth = 3.0f
         redPath.isAntiAlias = true//设置线条等图形的抗锯齿
 
         textPaint.isAntiAlias = true;//设置线条等图形的抗锯齿
@@ -183,7 +186,7 @@ class CharView : View {
         canvas.translate(offset, 0F)
         initPointPosition()
         //话最前面的区域
-        canvas.drawLine((-width / 2).toFloat(), pointPosition[0].y.toFloat(), pointPosition[0].x.toFloat(), pointPosition[0].y.toFloat(), redPath)
+        canvas.drawLine((-width / 2).toFloat(), pointPosition[0].y.toFloat(), pointPosition[0].x.toFloat(), pointPosition[0].y.toFloat(), firstRedLine)
         val path = Path()
         path.moveTo((-width / 2).toFloat(), pointPosition[0].y.toFloat())
         pointPosition.forEachIndexed { index, point ->
